@@ -5,6 +5,8 @@ library(MASS)
 #devtools::install_github("haiderstats/MTLR")
 library(MTLR)
 
+source("helper.R")
+
 lindt = read.csv(paste("./Data/lindt",".csv",sep=""), header=F)
 lindt$brand = "lindt"
 hersheys = read.csv(paste("./Data/hersheys",".csv",sep=""), header=F)

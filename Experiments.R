@@ -85,7 +85,7 @@ for(nRepeat in 1:10){
     hIndT = train$brand == "hersheys"
     vIndT = train$brand == "valrhona"
     
-    #Baseline Model#########################################
+    #Baseline Model##################################################################################################################
 
     #Mean Absolute Error (MAE)
     #Our baseline model computes the median over the training set and uses this as the estimate:
@@ -137,8 +137,8 @@ for(nRepeat in 1:10){
       profitRetail[i,col, nRepeat,5] = profit
     }
 
-    #Survival Models################################################################
-    #Kaplan-Meier Model####
+    #Survival Models##################################################################################################################
+    #Kaplan-Meier Model###############################################################################################################
     #For ic_np (from icen_Reg) we have to specify left censored observations as (0, event time) and right as (event time, Inf).
     l = ifelse(train$RP > train$Retail,train$Retail, 0)
     u = ifelse(train$RP > train$Retail,Inf, train$Retail)
@@ -237,7 +237,7 @@ for(nRepeat in 1:10){
     profitKM[i,, nRepeat,4] = profitV
     profitKM[i,, nRepeat,5] = profit
   
-    #Cox####
+    #Cox##############################################################################################################################
     #l,u are needed again and were specified in the KM section.
     fit_ph <- ic_sp(cbind(l, u) ~ ., model = 'ph',
                     data = cbind.data.frame(l,u,train[-c(1,2,3)]))
@@ -278,7 +278,7 @@ for(nRepeat in 1:10){
     profitCox[i,, nRepeat,4] = profitV
     profitCox[i,, nRepeat,5] = profit
 
-    #AFT####
+    #AFT##############################################################################################################################
     #For AFT we use the survreg function which we use "interval2" type censoring which uses NAs for left/right censoring.
     time1 = ifelse(train$RP > train$Retail,train$Retail, NA)
     time2 = ifelse(train$RP > train$Retail,NA, train$Retail)
@@ -324,7 +324,7 @@ for(nRepeat in 1:10){
     profitAFT[i,, nRepeat,4] = profitV
     profitAFT[i,, nRepeat,5] = profit
     
-    #MTLR####
+    #MTLR#############################################################################################################################
     #MTLR also uses interval2 type censoring so we make use of time1 and time2 again.
     #First we do internal CV to find a regularization parameter. Note we dont train biases or uncensored data first
     #since all the data is censored.
@@ -352,7 +352,8 @@ for(nRepeat in 1:10){
     classificationMTLRV = mean(as.numeric((medianMTLR[vInd] >= test$Retail[vInd])) == test$Decision[vInd])
     classificationMTLR = mean(as.numeric((medianMTLR >= test$Retail)) == test$Decision)
     
-    classificationMTLRMat[i + (nRepeat-1)*10,] = c(classificationMTLRG,classificationMTLRH,classificationMTLRL,classificationMTLRV,classificationMTLR)
+    classificationMTLRMat[i + (nRepeat-1)*10,] = c(classificationMTLRG,classificationMTLRH,classificationMTLRL,
+                                                   classificationMTLRV,classificationMTLR)
     
     #Profit:
     curves = predict(modMTLR, test)
@@ -369,7 +370,7 @@ for(nRepeat in 1:10){
     profitMTLR[i,, nRepeat,4] = profitV
     profitMTLR[i,, nRepeat,5] = profit
     
-    #ML MODELS########################
+    #ML MODELS########################################################################################################################
     #Here we only calcualte profit and not MAE or classification accuracy.
     
     #Logistic Regression####
@@ -386,7 +387,7 @@ for(nRepeat in 1:10){
     profitLR[i,, nRepeat,4] = profitV
     profitLR[i,, nRepeat,5] = profit
     
-    #Linear Discriminant Analysis####
+    #Linear Discriminant Analysis#####################################################################################################
     ldaMod = lda(Decision ~., data = train[-1])
     
     profitG = findProfitML(retail[testInd[[i]]][gInd],ldaMod, test[gInd,], train)
@@ -401,7 +402,7 @@ for(nRepeat in 1:10){
     profitLDA[i,, nRepeat,4] = profitV
     profitLDA[i,, nRepeat,5] = profit
     
-    #Naive Bayes####
+    #Naive Bayes######################################################################################################################
     #Naiver Bayes takes awhile to run for the *findProfit()* function, maybe ~3 minutes to complete all 4 runs.
     nbMod = naiveBayes(Decision ~., data = train[-1])
     profitG = findProfitML(retail[testInd[[i]]][gInd],nbMod, test[gInd,], train)
@@ -422,7 +423,7 @@ for(nRepeat in 1:10){
   }
 }
 
-#Save Data####
+#Save Data############################################################################################################################
 #Now that we have finished the experiment we will save the experimental results.
 
 #Save MAE:
@@ -448,20 +449,3 @@ saveRDS(profitMTLR, "RDSFiles/profit/profitMTLR")
 saveRDS(profitLR, "RDSFiles/profit/profitLR")
 saveRDS(profitLDA, "RDSFiles/profit/profitLDA")
 saveRDS(profitNB, "RDSFiles/profit/profitNB")
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
-
-
-

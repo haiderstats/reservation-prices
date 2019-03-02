@@ -293,143 +293,51 @@ profit = (numG*profitG + numH*profitH + numL*profitL +numV*profitV)/nrow(test)
     profitNB[i,, nRepeat,4] = profitV
     profitNB[i,, nRepeat,5] = profit
     #MTLR
-      weights = ifelse(train$brand=="godiva",1,1)
-      time1 = ifelse(train$RP > train$Retail,train$Retail, NA)
-      time2 = ifelse(train$RP > train$Retail,NA, train$Retail)
-      C1 = mtlr_cv(Surv(time1,time2,type = "interval2")~., data = cbind.data.frame(time1,time2,train[-c(1,2,3)]),C1_vec = seq(.2,.4,length.out = 9),
-                  train_biases = F, verbose =F, weights = weights, threshold = .000001, nfolds = 3)
-      #print(C1$avg_loss)
-      C1 = C1$bestC1      
-      modMTLR = mtlr(Surv(time1,time2,type = "interval2")~., data = cbind.data.frame(time1,time2,train[-c(1,2,3)]),C1 = C1, weights = weights,train_biases = F,
-                     threshold = .000001)
-      pricesMTLR = predict(modMTLR,test, type = "median")
-      errorMTLRG = mean(abs(pricesMTLR[gInd] - test$RP[gInd]))
-      errorMTLRH = mean(abs(pricesMTLR[hInd] - test$RP[hInd]))
-      errorMTLRL = mean(abs(pricesMTLR[lInd] - test$RP[lInd]))
-      errorMTLRV = mean(abs(pricesMTLR[vInd] - test$RP[vInd]))
-      errorMTLR = mean(abs(pricesMTLR - test$RP))
-      errorMTLRMat[i + (nRepeat-1)*10,] = c(errorMTLRG,errorMTLRH,errorMTLRL,errorMTLRV,errorMTLR)
+    time1 = ifelse(train$RP > train$Retail,train$Retail, NA)
+    time2 = ifelse(train$RP > train$Retail,NA, train$Retail)
+    C1 = mtlr_cv(Surv(time1,time2,type = "interval2")~., data = cbind.data.frame(time1,time2,train[-c(1,2,3)]),
+                 C1_vec = seq(.2,.4,length.out = 9),train_biases = F, train_uncensored = F, verbose =F,
+                 threshold = .000001, nfolds = 3)
+    C1 = C1$bestC1      
+    modMTLR = mtlr(Surv(time1,time2,type = "interval2")~., data = cbind.data.frame(time1,time2,train[-c(1,2,3)]),C1 = C1,
+                   train_biases = F, train_uncensored = F, threshold = .000001)
+    pricesMTLR = predict(modMTLR,test, type = "median")
+    errorMTLRG = mean(abs(pricesMTLR[gInd] - test$RP[gInd]))
+    errorMTLRH = mean(abs(pricesMTLR[hInd] - test$RP[hInd]))
+    errorMTLRL = mean(abs(pricesMTLR[lInd] - test$RP[lInd]))
+    errorMTLRV = mean(abs(pricesMTLR[vInd] - test$RP[vInd]))
+    errorMTLR = mean(abs(pricesMTLR - test$RP))
+    errorMTLRMat[i + (nRepeat-1)*10,] = c(errorMTLRG,errorMTLRH,errorMTLRL,errorMTLRV,errorMTLR)
       
-      classificationMTLRG = mean(as.numeric((pricesMTLR[gInd] >= test$Retail[gInd])) == test$Decision[gInd])
-      classificationMTLRH = mean(as.numeric((pricesMTLR[hInd] >= test$Retail[hInd])) == test$Decision[hInd])
-      classificationMTLRL = mean(as.numeric((pricesMTLR[lInd] >= test$Retail[lInd])) == test$Decision[lInd])
-      classificationMTLRV = mean(as.numeric((pricesMTLR[vInd] >= test$Retail[vInd])) == test$Decision[vInd])
-      classificationMTLR = mean(as.numeric((pricesMTLR >= test$Retail)) == test$Decision)
+    classificationMTLRG = mean(as.numeric((pricesMTLR[gInd] >= test$Retail[gInd])) == test$Decision[gInd])
+    classificationMTLRH = mean(as.numeric((pricesMTLR[hInd] >= test$Retail[hInd])) == test$Decision[hInd])
+    classificationMTLRL = mean(as.numeric((pricesMTLR[lInd] >= test$Retail[lInd])) == test$Decision[lInd])
+    classificationMTLRV = mean(as.numeric((pricesMTLR[vInd] >= test$Retail[vInd])) == test$Decision[vInd])
+    classificationMTLR = mean(as.numeric((pricesMTLR >= test$Retail)) == test$Decision)
       
-      classificationMTLRMat[i + (nRepeat-1)*10,] = c(classificationMTLRG,classificationMTLRH,classificationMTLRL,classificationMTLRV,classificationMTLR)
-      curves = predict(modMTLR, test)
+    classificationMTLRMat[i + (nRepeat-1)*10,] = c(classificationMTLRG,classificationMTLRH,classificationMTLRL,classificationMTLRV,classificationMTLR)
+    curves = predict(modMTLR, test)
 
-      profitG = findProfit(retail[testInd[[i]]][gInd], test$RP[gInd], curves[,-1][gInd], curves[,1])
-      profitH = findProfit(retail[testInd[[i]]][hInd], test$RP[hInd], curves[,-1][hInd], curves[,1])
-      profitL = findProfit(retail[testInd[[i]]][lInd], test$RP[lInd], curves[,-1][lInd], curves[,1])
-      profitV = findProfit(retail[testInd[[i]]][vInd], test$RP[vInd], curves[,-1][vInd], curves[,1])
-      profit = findProfit(retail[testInd[[i]]], test$RP, curves[,-1], curves[,1])
+    profitG = findProfit(retail[testInd[[i]]][gInd], test$RP[gInd], curves[,-1][gInd], curves[,1])
+    profitH = findProfit(retail[testInd[[i]]][hInd], test$RP[hInd], curves[,-1][hInd], curves[,1])
+    profitL = findProfit(retail[testInd[[i]]][lInd], test$RP[lInd], curves[,-1][lInd], curves[,1])
+    profitV = findProfit(retail[testInd[[i]]][vInd], test$RP[vInd], curves[,-1][vInd], curves[,1])
+    profit = findProfit(retail[testInd[[i]]], test$RP, curves[,-1], curves[,1])
       
-      profitMTLR[i,, nRepeat,1] = profitG
-      profitMTLR[i,, nRepeat,2] = profitH
-      profitMTLR[i,, nRepeat,3] = profitL
-      profitMTLR[i,, nRepeat,4] = profitV
-      profitMTLR[i,, nRepeat,5] = profit
-      print(i)
-      print(profitCox[i,,nRepeat,5] - profitMTLR[i,,nRepeat,5])
-      }
+    profitMTLR[i,, nRepeat,1] = profitG
+    profitMTLR[i,, nRepeat,2] = profitH
+    profitMTLR[i,, nRepeat,3] = profitL
+    profitMTLR[i,, nRepeat,4] = profitV
+    profitMTLR[i,, nRepeat,5] = profit
+    print(i)
+    print(profitCox[i,,nRepeat,5] - profitMTLR[i,,nRepeat,5])
     }
+}
 
    
 ####################
 
-findProfit = function(cost, reservationPrice, curves, predictedTimes){
-  cprop = seq(0,.95,by = 0.05)
-  times = seq(0,19, length.out = 500) #19 is the max reservation price across all chocolates
-  probabilities = sapply(1:ncol(curves), function(x) predict_prob(curves[,x],predictedTimes, times))
-  profits = c()
-  for(p in cprop){
-    bestPrices = times[sapply(1:ncol(curves),function(x) which.max((times - cost[x]*p)*probabilities[,x]))]
-    avgProfit = mean((bestPrices <= reservationPrice)*(bestPrices - p*cost))
-    profits = c(profits,avgProfit)
-  }
-  return(profits)
-}
 
-findBestPriceML = function(model,testRow,train){
-  times = seq(0,max(train$Retail), length.out = 500) #19 is the max reservation price across all chocolates
-  row.names(testRow) = NULL
-  newTest = cbind.data.frame(Retail = times,testRow)
-  cl = attr(model, "class")[1]
-  probs = switch(cl,
-                 randomForest = predict(model,newTest,type = "prob")[,2],
-                 glm = predict(model, newTest,type =  "response"),
-                 lognet = predict(model, as.matrix(newTest), type = "response"),
-                 naiveBayes  = {p  = predict(model,newTest, type = "raw")[,2]; ifelse(p ==1,0,p)},
-                 svm.formula = attr(predict(model,as.matrix(newTest), probability = TRUE),"prob")[,1],
-                 lda = {p = predict(model,newTest); p$posterior[,2]}
-                 )
-  return(probs)
-}
-
-findProfitML = function(cost, model,test,train){
-  cprop = seq(0,.95,by = 0.05)
-  times = seq(0,19, length.out = 500) #19 is the max reservation price across all chocolates
-  row.names(test) = NULL
-  probabilities = sapply(1:nrow(test), function(x) findBestPriceML(model, test[x,-c(1,2,3)], train))
-  profits = c()
-  for(p in cprop){
-    bestPrices = times[sapply(1:nrow(test),function(x) which.max((times - cost[x]*p)*probabilities[,x]))]
-    avgProfit = mean((bestPrices <= test$RP)*(bestPrices - p*cost))
-    profits = c(profits,avgProfit)
-  }
-  return(profits)
-}
-
-survfunc = function (object, t, newdata, name = "t") {
-  #Altered from origina: I am going to add an ID to every row so we can retrieve the individuals easily from the output.
-  #I gave a weird ID variable name so if the original data came in with a variable ("ID") it won't break our system.
-  newdata$ID_SurvivalCurves = 1:nrow(newdata)
-  newdata <- do.call(rbind, rep(list(newdata), length(t)))
-  t <- rep(t, each = nrow(newdata)/length(t))
-  if (class(object) != "survreg") 
-    stop("not a survreg object")
-  lp <- predict(object, newdata = newdata, type = "lp")
-  if (object$dist %in% c("weibull", "exponential")) {
-    newdata$pdf <- dweibull(t, 1/object$scale, exp(lp))
-    newdata$cdf <- ifelse(t == 0,0,
-                          ifelse(is.nan(pweibull(t, 1/object$scale, exp(lp))),1,pweibull(t, 1/object$scale, exp(lp))))
-    newdata$haz <- exp(dweibull(t, 1/object$scale, exp(lp), 
-                                log = TRUE) - pweibull(t, 1/object$scale, exp(lp), 
-                                                       lower.tail = FALSE, log.p = TRUE))
-  }
-  else if (object$dist == "lognormal") {
-    newdata$pdf <- dlnorm(t, lp, object$scale)
-    newdata$cdf <- plnorm(t, lp, object$scale)
-    newdata$haz <- exp(dlnorm(t, lp, object$scale, log = TRUE) - 
-                         plnorm(t, lp, object$scale, lower.tail = FALSE, log.p = TRUE))
-  }
-  else if (object$dist == "gaussian") {
-    newdata$pdf <- dnorm(t, lp, object$scale)
-    newdata$cdf <- pnorm(t, lp, object$scale)
-    newdata$haz <- exp(dnorm(t, lp, object$scale, log = TRUE) - 
-                         pnorm(t, lp, object$scale, lower.tail = FALSE, log.p = TRUE))
-  }
-  else if (object$dist == "loglogistic") {
-    newdata$pdf <- dlogis(log(t), lp, object$scale)/t
-    newdata$cdf <- plogis(log(t), lp, object$scale)
-    newdata$haz <- exp(dlogis(log(t), lp, object$scale, log = TRUE) - 
-                         log(t) - plogis(log(t), lp, object$scale, lower.tail = FALSE, 
-                                         log.p = TRUE))
-  }
-  else if (object$dist == "logistic") {
-    newdata$pdf <- dlogis(t, lp, object$scale)
-    newdata$cdf <- plogis(t, lp, object$scale)
-    newdata$haz <- exp(dlogis(t, lp, object$scale, log = TRUE) - 
-                         dlogis(t, lp, object$scale, lower.tail = FALSE, log.p = TRUE))
-  }
-  else {
-    stop("unknown distribution")
-  }
-  newdata$sur <- 1 - newdata$cdf
-  newdata[name] <- t
-  return(newdata)
-}
 
 
 

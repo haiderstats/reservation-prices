@@ -3,4 +3,4 @@ This is a code repository to accompany the manuscript with the working title "Us
 
 All the results from the 10-times repeated 10-fold cross validation are saved in the `RDSFiles` folder and can be reas into R using the `readRDS()` function. These RDS files can be replicated by runnning `Experiments.R`. All Tables and Figures were created in `MakeTables_Figures.R`.  
 
-Eventually, all the data files will be uploaded into a `Data` folder.
+All the data files can be obtained in the `Data` folder.
